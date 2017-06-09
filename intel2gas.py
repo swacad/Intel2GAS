@@ -12,6 +12,8 @@ import sys, time
 import os
 import cStringIO
 
+# TODO: Handle function calls correctly
+
 #----------------------------------------------------------------------
 # TOKEN TYPE
 #----------------------------------------------------------------------
@@ -277,17 +279,15 @@ class cscanner (ctokenize):
         token = None
         done = -1
         # Start change
-        print('read_number self.ch = ' + str(self.ch))
         # end change
         if ((self.ch < '0' or self.ch > '9')):
-            print('Returning false!!')
             return None
         text = ''
         while self.ch.isalnum() or self.ch == '.':
             text += self.ch
             self.getch()
 
-        print('read_number text = ' + text)
+        # print('read_number text = ' + text)
 
         pos = len(text)
         while pos > 0:
@@ -434,40 +434,31 @@ class cscanner (ctokenize):
         # this is a number
         if (self.ch >= '0' and self.ch <= '9') or self.ch == '-':
             # START CHANGE
-            # print('1st read() this is a number self.ch = ' + str(self.ch))
             negative = False
-            if self.ch == '-':
+            if self.ch == '-': # Check to see if number is negative
                 try:
-                    # next_char = self.fp.read(1)
                     next_char = self.getch()
-                    # print('next_char = ' + str(next_char))
                     try:
-                        num = int(next_char)
+                        int(next_char)  # Check if next character is an integer
                         negative = True
-                        # print('Negative')
-                    except:
-                        print('NOT NEGATIVE')
+                    except ValueError:
+                        # print('NOT NEGATIVE')
                         curr_pos = self.fp.tell()
-                        print('f.tell() = ' + str(self.fp.tell()))
                         self.fp.seek(curr_pos - 1)
-                        print('new f.tell() = ' + str(self.fp.tell()))
                 except:
                     pass
             # END CHANGE
-
 
             row, col = self.row, self.col
             self.code = 0
             self.error = ''
 
-            # print('2nd: read() this is a number self.ch = ' + str(self.ch))
-
             token = self.read_number()
             if self.code:
                 return None
             token.row, token.col = row, col
-            # print('read() this is a number token: ' + str(token))
-            if negative:
+
+            if negative:  # Turn number negative if there was - immediately preceding it
                 token.value *= -1
             return token
 
